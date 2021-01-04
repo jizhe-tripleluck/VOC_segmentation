@@ -1,0 +1,7 @@
+.idea
+__pycache__
+data
+*.iml
+*.ipynb
+other_unet.py
+unet_parts.py
