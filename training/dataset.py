@@ -96,6 +96,9 @@ class_convert = torchvision.transforms.Compose(
 trainset = torchvision.datasets.VOCSegmentation(root='./data', image_set='train',
                                                 download=False, transform=transform,
                                                 target_transform=class_convert)
+
+subset1, subset2 = data.random_split(trainset, [100, len(trainset) - 100])
+trainset = subset1
 trainloader = data.DataLoader(trainset, batch_size=batch_size,
                               shuffle=True, num_workers=0)
 # Load test set

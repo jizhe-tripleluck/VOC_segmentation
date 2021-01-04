@@ -61,4 +61,4 @@ class JaccardLoss(nn.Module):
         cardinality = torch.sum(probas + true_1_hot, dims)
         union = cardinality - intersection
         jacc_loss = (intersection / (union + eps)).mean()
-        return 1 - jacc_loss
+        return 1.0 - jacc_loss

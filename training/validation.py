@@ -22,7 +22,7 @@ def eval(net: nn.Module) -> (float, float):
             average_loss += criterion(outputs, labels).item() * outputs.shape[0]
             # predicted = utils.discrete_softmax(outputs)
             # test_accuracy += metric(predicted, labels).item()
-            current += outputs.shape[1]
+            current += outputs.shape[0]
             if current >= total:
                 break
     average_loss /= total  # Our loss and metric are bound together, so we only need loss

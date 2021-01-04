@@ -65,7 +65,8 @@ def train(net: nn.Module, epoch_count: int, start_epoch: int=0,
 
             # Progressbar things
             if curr_iter >= bar_step:
-                iter_bar.next(bar_step)
+                for i in range(ds.batch_size // bar_step):
+                    iter_bar.next(bar_step)
                 curr_iter -= bar_step
             curr_iter += ds.batch_size
 
