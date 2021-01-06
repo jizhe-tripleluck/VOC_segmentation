@@ -60,19 +60,19 @@ class ToOneHot(BasePILConvert):
     """Transform PIL RGB image to tensor with class labels"""
     def __call__(self, img: Image) -> Tensor:
         return utils.labels_one_hot(
-            torch.tensor(np.swapaxes(self.encode_segmap(img), 0, -1),
+            torch.tensor(self.encode_segmap(img),
                          dtype=torch.int64).cuda())
 
 
 class ToLabels(BasePILConvert):
     """Transform PIL RGB image to tensor with class labels in one-hot encoding"""
     def __call__(self, img: Image) -> Tensor:
-        return torch.tensor(np.swapaxes(self.encode_segmap(img), 0, -1),
+        return torch.tensor(self.encode_segmap(img),
                             dtype=torch.int64).cuda()
 
 
 # Load datasets
-batch_size = 18
+batch_size = 1
 img_size = 256
 #                     Do not need this for v2
 label_size = img_size  # - 188  # Constant edge difference
@@ -98,7 +98,7 @@ trainset = torchvision.datasets.VOCSegmentation(root='./data', image_set='train'
                                                 download=False, transform=transform,
                                                 target_transform=class_convert)
 
-subset1, subset2 = data.random_split(trainset, [100, len(trainset) - 100])
+subset1, subset2 = data.random_split(trainset, [1, len(trainset) - 1])
 trainset = subset1
 trainloader = data.DataLoader(trainset, batch_size=batch_size,
                               shuffle=True, num_workers=0)
@@ -110,7 +110,9 @@ testloader = data.DataLoader(testset, batch_size=batch_size,
                              shuffle=False, num_workers=0)
 
 # Just a small sanity test of labels
-# images, labels = testset.__getitem__(14)
-# plt.imshow(np.swapaxes(labels.cpu().numpy(), 0, -1) / 20, cmap='gray')
+# images, labels = trainset.__getitem__(0)
+# plt.imshow(np.moveaxis(images.cpu().numpy(), 0, -1))
+# plt.show()
+# plt.imshow(labels.cpu().numpy() / 20, cmap='gray')
 # plt.show()
 # input()

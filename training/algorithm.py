@@ -31,7 +31,7 @@ def get_optimizer(net: nn.Module, params: list=[]) -> optim.Optimizer:
             optim: optimizer"""
     # return optim.SGD(net.parameters(), lr=params[0], momentum=params[1])
     # return optim.RMSprop(net.parameters(), lr=0.000002, weight_decay=1e-8, momentum=0.9)
-    return optim.SGD(net.parameters(), lr=0.000002)
+    return optim.SGD(net.parameters(), lr=0.001)
 
 
 def update_optimizer(optimizer: optim.Optimizer, params: list) -> None:
