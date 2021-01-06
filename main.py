@@ -1,5 +1,5 @@
 import torch
-import models.unet as model
+import models.unet_v2 as model
 import log_utils.log_tensorboard as log
 from training.train import train
 # from training.test import test
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     print(device)
 
     # Create an instance of the model
-    net = model.Net()
+    net = model.Net(n_channels=3, n_classes=21)
     net.to(device)
     # PATH = 'model_instances/*.pth'
     # net.load_state_dict(torch.load(PATH))

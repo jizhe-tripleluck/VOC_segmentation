@@ -64,7 +64,7 @@ def train(net: nn.Module, epoch_count: int, start_epoch: int=0,
             average_loss += loss.item() * outputs.shape[0]
 
             # Progressbar things
-            if curr_iter >= bar_step:
+            if curr_iter >= bar_step > 0:
                 for i in range(ds.batch_size // bar_step):
                     iter_bar.next(bar_step)
                 curr_iter -= bar_step
@@ -78,8 +78,8 @@ def train(net: nn.Module, epoch_count: int, start_epoch: int=0,
         train_accuracy = 100.0 * (1.0 - average_loss)  # train_accuracy / total
 
         # Compute avg test loss and accuracy
-        net.eval()
-        test_accuracy, test_loss = validation.eval(net)
+        # net.eval()
+        test_accuracy, test_loss = float("NaN"), float("NaN")  # validation.eval(net)
 
         # Add to log
         # log.add(epoch_idx, (train_accuracy, test_accuracy,

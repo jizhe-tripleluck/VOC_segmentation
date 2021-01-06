@@ -3,9 +3,9 @@ import torchvision
 import torch.tensor as Tensor
 import training.utils as utils
 import numpy as np
+import matplotlib.pyplot as plt
 from torch.utils import data
 from PIL import Image
-import PIL
 
 
 class PngToPIL(object):
@@ -74,13 +74,14 @@ class ToLabels(BasePILConvert):
 # Load datasets
 batch_size = 18
 img_size = 256
-label_size = img_size - 188  # Constant edge difference
+#                     Do not need this for v2
+label_size = img_size  # - 188  # Constant edge difference
 
 # Input image transform normalize
 transform = torchvision.transforms.Compose(
     [
-        torchvision.transforms.ToTensor(),
         torchvision.transforms.Resize((img_size, img_size), interpolation=Image.BICUBIC),
+        torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]
 )
@@ -107,3 +108,9 @@ testset = torchvision.datasets.VOCSegmentation(root='./data', image_set='val',
                                                target_transform=class_convert)
 testloader = data.DataLoader(testset, batch_size=batch_size,
                              shuffle=False, num_workers=0)
+
+# Just a small sanity test of labels
+# images, labels = testset.__getitem__(14)
+# plt.imshow(np.swapaxes(labels.cpu().numpy(), 0, -1) / 20, cmap='gray')
+# plt.show()
+# input()
