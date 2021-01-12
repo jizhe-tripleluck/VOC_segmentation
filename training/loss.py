@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.tensor as Tensor
 import torch.nn.functional as F
+import torch.autograd.function as Function
+from training.utils import batch_labels_one_hot
 
 SMOOTH = 1e-6
 
@@ -12,6 +14,8 @@ class DiceLoss(nn.Module):
         self.softmax = nn.Softmax2d()
 
     def forward(self, outputs: Tensor, labels: Tensor, eps: float=1e-06) -> Tensor:
+        labels = batch_labels_one_hot(labels)
+
         # outputs = outputs[:, 1:, :, :]  # Possibly ignore background class
         # labels = labels[:, 1:, :, :]
 
@@ -21,7 +25,7 @@ class DiceLoss(nn.Module):
         numerator = 2.0 * torch.sum(outputs * labels, axes)  # Estimate intersection
         denominator = torch.sum(outputs + labels, axes)  # Estimate sum of cardinalities
 
-        return (1.0 - torch.mean((numerator + eps) / (denominator + eps), 1)).sum()  # Compute soft Dice score
+        return (1.0 - torch.mean(numerator / (denominator + eps), 1)).mean()  # Compute soft Dice score
 
 
 class JaccardLoss(nn.Module):
@@ -56,9 +60,10 @@ class JaccardLoss(nn.Module):
             true_1_hot = true_1_hot.permute(0, 3, 1, 2).float()
             probas = F.softmax(logits, dim=1)
         true_1_hot = true_1_hot.type(logits.type())
-        dims = (0,) + tuple(range(2, true.ndimension()))
+        dims = (0,) + tuple(range(2, logits.ndimension()))
         intersection = torch.sum(probas * true_1_hot, dims)
         cardinality = torch.sum(probas + true_1_hot, dims)
         union = cardinality - intersection
-        jacc_loss = (intersection / (union + eps)).mean()
-        return 1.0 - jacc_loss
+        classes_iou = intersection / (union + eps)
+        # jacc_loss = classes_iou.sum() / (classes_iou > 0).sum()
+        return 1.0 - classes_iou.mean()

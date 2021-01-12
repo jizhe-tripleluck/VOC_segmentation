@@ -4,7 +4,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 # Create writer and name scalars
 writer = None  # SummaryWriter("log/not_categorized")
-scalar_labels = ["Train Acc", "Test Acc", "Train Loss", "Test Loss"]
+scalar_labels = ["Train Acc", "Test Acc", "Train Loss", "Test Loss", 'Learning Rate']
 image_labels = ["Confusion matrix"]
 
 

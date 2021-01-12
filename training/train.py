@@ -18,7 +18,7 @@ def train(net: nn.Module, epoch_count: int, start_epoch: int=0,
                                             scheduler.params_list[start_epoch])
     else:
         optimizer = algorithm.get_optimizer(net)
-    # metric = algorithm.get_metric()
+    metric = algorithm.get_metric()
 
     total = len(ds.trainset)          # Total number of imgs in dataset
     bar_step = total // 50            # Progressbar step
@@ -34,7 +34,7 @@ def train(net: nn.Module, epoch_count: int, start_epoch: int=0,
 
         # Set init values to zero
         average_loss = 0.0
-        # train_accuracy = float("NaN")
+        train_accuracy = 0.0
         curr_iter = 0
 
         # Progressbar
@@ -51,9 +51,10 @@ def train(net: nn.Module, epoch_count: int, start_epoch: int=0,
 
             outputs = net(inputs)
 
+            _, predicted = torch.max(outputs, 1)
+
             # Stats (old)
-            # predicted = utils.discrete_softmax(outputs)
-            # train_accuracy += (metric(predicted, labels)).item()
+            train_accuracy += metric(outputs, labels).item() * outputs.shape[0]
 
             # Compute loss and backward
             loss = criterion(outputs, labels)
@@ -65,8 +66,7 @@ def train(net: nn.Module, epoch_count: int, start_epoch: int=0,
 
             # Progressbar things
             if curr_iter >= bar_step > 0:
-                for i in range(ds.batch_size // bar_step):
-                    iter_bar.next(bar_step)
+                iter_bar.next(bar_step)
                 curr_iter -= bar_step
             curr_iter += ds.batch_size
 
@@ -74,19 +74,19 @@ def train(net: nn.Module, epoch_count: int, start_epoch: int=0,
         iter_bar.finish()
 
         # Compute avg train loss and accuracy
-        average_loss /= total
-        train_accuracy = 100.0 * (1.0 - average_loss)  # train_accuracy / total
+        average_loss = average_loss / total
+        train_accuracy = 100.0 * train_accuracy / total
 
         # Compute avg test loss and accuracy
-        # net.eval()
-        test_accuracy, test_loss = float("NaN"), float("NaN")  # validation.eval(net)
+        net.eval()
+        test_accuracy, test_loss = float("nan"), float("nan")  # validation.eval(net)
 
         # Add to log
-        # log.add(epoch_idx, (train_accuracy, test_accuracy,
-        #                     average_loss, test_loss))
+        log.add(epoch_idx, (train_accuracy, test_accuracy,
+                            average_loss, test_loss, scheduler.params_list[epoch_idx][0]))
 
         # Flush log changes
-        # log.save()
+        log.save()
 
         # Print useful numbers
         print('[%d, %5d] average loss: %.3f, test loss: %.3f' %

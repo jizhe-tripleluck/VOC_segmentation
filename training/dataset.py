@@ -8,6 +8,16 @@ from torch.utils import data
 from PIL import Image
 
 
+def imshow(image: Tensor):
+    plt.imshow(np.moveaxis(image.cpu().numpy(), 0, -1))
+    plt.show()
+
+
+def labshow(label: Tensor):
+    plt.imshow(label.cpu().numpy() / 20, cmap='plasma')
+    plt.show()
+
+
 class PngToPIL(object):
     """Transform PIL PNG image to raw image"""
     def __call__(self, img) -> Image:
@@ -74,13 +84,14 @@ class ToLabels(BasePILConvert):
 # Load datasets
 batch_size = 1
 img_size = 256
-#                     Do not need this for v2
+#                     Do not need this for U-Net v2
 label_size = img_size  # - 188  # Constant edge difference
 
 # Input image transform normalize
 transform = torchvision.transforms.Compose(
     [
-        torchvision.transforms.Resize((img_size, img_size), interpolation=Image.BICUBIC),
+        torchvision.transforms.Resize(img_size, interpolation=Image.BICUBIC),
+        torchvision.transforms.CenterCrop(img_size),
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]
@@ -89,7 +100,8 @@ transform = torchvision.transforms.Compose(
 class_convert = torchvision.transforms.Compose(
     [
         PngToPIL(),
-        torchvision.transforms.Resize((label_size, label_size), interpolation=Image.NEAREST),
+        torchvision.transforms.Resize(label_size, interpolation=Image.NEAREST),
+        torchvision.transforms.CenterCrop(label_size),
         ToLabels()
     ]
 )
@@ -97,22 +109,19 @@ class_convert = torchvision.transforms.Compose(
 trainset = torchvision.datasets.VOCSegmentation(root='./data', image_set='train',
                                                 download=False, transform=transform,
                                                 target_transform=class_convert)
-
-subset1, subset2 = data.random_split(trainset, [1, len(trainset) - 1])
-trainset = subset1
+trainset = data.Subset(trainset, list(range(1)))
 trainloader = data.DataLoader(trainset, batch_size=batch_size,
                               shuffle=True, num_workers=0)
 # Load test set
 testset = torchvision.datasets.VOCSegmentation(root='./data', image_set='val',
                                                download=False, transform=transform,
                                                target_transform=class_convert)
+testset = data.Subset(testset, list(range(150)))
 testloader = data.DataLoader(testset, batch_size=batch_size,
                              shuffle=False, num_workers=0)
 
 # Just a small sanity test of labels
 # images, labels = trainset.__getitem__(0)
-# plt.imshow(np.moveaxis(images.cpu().numpy(), 0, -1))
-# plt.show()
-# plt.imshow(labels.cpu().numpy() / 20, cmap='gray')
-# plt.show()
+# imshow(images)
+# labshow(labels)
 # input()
